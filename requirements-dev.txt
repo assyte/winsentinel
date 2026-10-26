@@ -1,0 +1,5 @@
+# Development and packaging tools (not required to run WinSentinel)
+-r requirements.txt
+
+pyinstaller>=6.0,<7.0
+pillow>=10.0

@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# PyInstaller
+build/
+dist/
+
+# Local tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.idea/
+.vscode/
+
+# Secrets and local configuration
+.env
+.env.*
+*.log
+*.pem
+*.key
+*.p12
+*.pfx
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store

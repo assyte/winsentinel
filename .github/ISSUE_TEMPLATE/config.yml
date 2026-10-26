@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/assyte/winsentinel/security/policy
+    about: Please use the private vulnerability reporting process described in SECURITY.md.
+  - name: Questions and support
+    url: https://github.com/assyte/winsentinel/discussions
+    about: Ask usage questions or discuss ideas with the community.

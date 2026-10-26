@@ -1,0 +1,53 @@
+name: Feature request
+description: Suggest a focused improvement for WinSentinel
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. WinSentinel favors small, local-first features that
+        are safe to reverse and do not add a background service or telemetry.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What problem would this solve? Who is it for?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior you would like.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Existing workarounds or other approaches.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Dashboard / audit
+        - DNS & Network
+        - Firewall & Defender
+        - Browser & Privacy
+        - Security Tools
+        - Packaging / CI
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmation
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: This feature fits the project's local-first and explicit-action principles.
+          required: true

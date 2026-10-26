@@ -1,0 +1,76 @@
+name: Bug report
+description: Report a reproducible problem with WinSentinel
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve WinSentinel. Do not include tokens, passwords,
+        Wi-Fi credentials, or other sensitive data. Report security vulnerabilities
+        through the private process in SECURITY.md instead of this form.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: A clear description of the problem.
+      placeholder: The app showed "..." after I clicked "..."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: WinSentinel version
+      description: Output of `python main.py --version`
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and build
+      description: For example, Windows 11 24H2 build 26100.1234
+      placeholder: "Windows 11 24H2 (26100.xxxx)"
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How are you running it?
+      options:
+        - From source with Python
+        - Packaged WinSentinel.exe
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Redact secrets. The log is normally at %LOCALAPPDATA%\WinSentinel\logs\winsentinel.log.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmation
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: This report does not contain secrets or exploit details for a vulnerability.
+          required: true
