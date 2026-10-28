@@ -13,6 +13,13 @@ All notable changes to WinSentinel are documented here. The project follows
 - Localization
 - Signed release builds
 
+## [1.1.1] - 2026-10-28
+
+### Fixed
+
+- Firewall enable/disable commands now pass `GpoBoolean`-compatible enum
+  literals, fixing `Set-NetFirewallProfile` failures on affected Windows builds
+
 ## [1.1.0] - 2026-10-28
 
 ### Added

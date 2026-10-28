@@ -7,7 +7,7 @@ from typing import Final
 
 APP_NAME: Final = "WinSentinel"
 APP_TAGLINE: Final = "Your Windows security copilot"
-APP_VERSION: Final = "1.1.0"
+APP_VERSION: Final = "1.1.1"
 
 # ---------------------------------------------------------------------------
 # Visual language — neutral graphite, muted by design, with light/dark modes

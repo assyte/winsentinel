@@ -15,7 +15,7 @@
 <p align="center">
   <img alt="Platform: Windows 10 / 11" src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078D4?style=flat-square">
   <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white">
-  <img alt="Tests: 71 passing" src="https://img.shields.io/badge/tests-71%20passing-22c55e?style=flat-square">
+  <img alt="Tests: 73 passing" src="https://img.shields.io/badge/tests-73%20passing-22c55e?style=flat-square">
   <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-22c55e?style=flat-square">
   <a href="https://github.com/assyte/winsentinel/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/assyte/winsentinel/actions/workflows/ci.yml/badge.svg"></a>
 </p>
@@ -448,7 +448,7 @@ Current coverage includes:
 - shell quoting, JSON tolerance, and address validation
 - theme preference persistence and light/dark palette integrity
 
-The repository has **71 tests** and a GitHub Actions workflow that runs them on Windows
+The repository has **73 tests** and a GitHub Actions workflow that runs them on Windows
 with Python 3.11 and 3.12.
 
 ### Build a standalone executable

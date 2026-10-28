@@ -103,7 +103,7 @@ class FirewallManager:
             return OperationResult.error(f"Unknown firewall profile: {profile}")
         script = (
             f"Set-NetFirewallProfile -Profile {profile} "
-            f"-Enabled {'$true' if enabled else '$false'} -ErrorAction Stop"
+            f"-Enabled {'True' if enabled else 'False'} -ErrorAction Stop"
         )
         result = SHELL.powershell(script, label=f"Firewall {profile}")
         if not result.ok:
@@ -132,7 +132,7 @@ class FirewallManager:
             return OperationResult.error("Administrator rights are required to change the firewall.")
         script = (
             "Set-NetFirewallProfile -Profile Domain,Private,Public "
-            f"-Enabled {'$true' if enabled else '$false'} -ErrorAction Stop"
+            f"-Enabled {'True' if enabled else 'False'} -ErrorAction Stop"
         )
         result = SHELL.powershell(script, label="All firewall profiles")
         if not result.ok:
