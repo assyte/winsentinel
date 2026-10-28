@@ -29,6 +29,11 @@ All notable changes to WinSentinel are documented here. The project follows
 - Made DNS provider colors and raw Tk widgets follow the active theme
 - Added Pillow as a runtime dependency for the logo asset
 
+### Fixed
+
+- Firewall profile switches now show `On`/`Off` instead of a static `Active` label
+- Transient notifications no longer cover the dashboard score metrics
+
 ## [1.0.0] - 2026-10-26
 
 ### Added

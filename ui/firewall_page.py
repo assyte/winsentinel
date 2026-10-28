@@ -155,7 +155,7 @@ class FirewallPage(ctk.CTkFrame):
             self._profile_detail[profile_name] = detail
             switch = ctk.CTkSwitch(
                 profile_card,
-                text="Active",
+                text="Off",
                 font=ui_font(8),
                 text_color=COLORS["text_muted"],
                 progress_color=COLORS["accent"],
@@ -374,6 +374,7 @@ class FirewallPage(ctk.CTkFrame):
                     switch.select()
                 else:
                     switch.deselect()
+                switch.configure(text="On" if profile.enabled else "Off")
             self._profile_pills[profile.name].set_status(
                 Status.PASS if profile.enabled else Status.FAIL
             )

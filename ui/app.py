@@ -425,7 +425,7 @@ class WinSentinelApp(ctk.CTk):
             border_width=1,
             border_color=COLORS["border_bright"],
         )
-        toast.place(relx=1.0, x=-16, y=58, anchor="ne")
+        toast.place(relx=1.0, rely=1.0, x=-16, y=-64, anchor="se")
         ctk.CTkLabel(
             toast,
             text="●",
