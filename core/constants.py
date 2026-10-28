@@ -7,36 +7,77 @@ from typing import Final
 
 APP_NAME: Final = "WinSentinel"
 APP_TAGLINE: Final = "Your Windows security copilot"
-APP_VERSION: Final = "1.0.0"
+APP_VERSION: Final = "1.1.0"
 
 # ---------------------------------------------------------------------------
-# Visual language — deep AMOLED dark with cyan accents
+# Visual language — neutral graphite, muted by design, with light/dark modes
 # ---------------------------------------------------------------------------
-COLORS: Final[dict[str, str]] = {
-    "bg": "#000000",
-    "bg_elevated": "#050505",
-    "sidebar": "#000000",
-    "card": "#080808",
-    "card_hover": "#111111",
-    "card_muted": "#0c0c0c",
-    "input": "#000000",
-    "border": "#191919",
-    "border_bright": "#2d2d2d",
-    "text": "#f5f5f5",
-    "text_muted": "#a1a1a1",
-    "text_dim": "#6b6b6b",
-    "accent": "#22d3ee",
-    "accent_hover": "#06b6d4",
-    "accent_soft": "#06272d",
-    "success": "#22c55e",
-    "success_soft": "#052012",
-    "warning": "#f59e0b",
-    "warning_soft": "#241804",
-    "danger": "#ef4444",
-    "danger_soft": "#240b0b",
-    "info": "#38bdf8",
-    "info_soft": "#041f2c",
+DARK_COLORS: Final[dict[str, str]] = {
+    "bg": "#111317",
+    "bg_elevated": "#15181c",
+    "sidebar": "#15171a",
+    "card": "#1a1d21",
+    "card_hover": "#23272c",
+    "card_muted": "#1f2227",
+    "input": "#15171a",
+    "border": "#292e34",
+    "border_bright": "#3a414a",
+    "text": "#f1f4f7",
+    "text_muted": "#abb3bd",
+    "text_dim": "#77808b",
+    "accent": "#96a9bd",
+    "accent_hover": "#b0c2d4",
+    "accent_soft": "#27313a",
+    "accent_text": "#12161b",
+    "success": "#6fbf94",
+    "success_soft": "#16291f",
+    "warning": "#d9a85c",
+    "warning_soft": "#2a2113",
+    "danger": "#e07a7a",
+    "danger_soft": "#2a1618",
+    "danger_hover": "#3a1d1f",
+    "danger_border": "#5c2a2d",
+    "info": "#82b4e4",
+    "info_soft": "#172432",
+    "select_bg": "#2f4050",
 }
+
+LIGHT_COLORS: Final[dict[str, str]] = {
+    "bg": "#f3f4f6",
+    "bg_elevated": "#f8f9fa",
+    "sidebar": "#e9ebef",
+    "card": "#ffffff",
+    "card_hover": "#f4f6f8",
+    "card_muted": "#f7f8fa",
+    "input": "#ffffff",
+    "border": "#d9dde3",
+    "border_bright": "#bfc7d1",
+    "text": "#1b2027",
+    "text_muted": "#59626d",
+    "text_dim": "#8a939e",
+    "accent": "#526d86",
+    "accent_hover": "#405a72",
+    "accent_soft": "#e7edf3",
+    "accent_text": "#ffffff",
+    "success": "#2f7d57",
+    "success_soft": "#e8f4ed",
+    "warning": "#946415",
+    "warning_soft": "#fbf3e4",
+    "danger": "#b44343",
+    "danger_soft": "#fbeaea",
+    "danger_hover": "#f5dada",
+    "danger_border": "#dfb4b4",
+    "info": "#2e6da4",
+    "info_soft": "#e8f1f9",
+    "select_bg": "#d7e3ee",
+}
+
+THEMES: Final[dict[str, dict[str, str]]] = {
+    "dark": DARK_COLORS,
+    "light": LIGHT_COLORS,
+}
+
+COLORS: Final[dict[str, str]] = dict(DARK_COLORS)
 
 STATUS_META: Final[dict[str, dict[str, str]]] = {
     "pass": {
@@ -102,7 +143,11 @@ class DNSProvider:
     secondary: str
     ipv6_primary: str | None = None
     ipv6_secondary: str | None = None
-    accent: str = COLORS["accent"]
+    accent_key: str = "accent"
+
+    @property
+    def accent(self) -> str:
+        return COLORS.get(self.accent_key, COLORS["accent"])
 
     @property
     def ipv4_servers(self) -> tuple[str, ...]:
@@ -132,7 +177,7 @@ DNS_PROVIDERS: Final[tuple[DNSProvider, ...]] = (
         secondary="1.0.0.1",
         ipv6_primary="2606:4700:4700::1111",
         ipv6_secondary="2606:4700:4700::1001",
-        accent=COLORS["accent"],
+        accent_key="accent",
     ),
     DNSProvider(
         key="cloudflare_family",
@@ -144,7 +189,7 @@ DNS_PROVIDERS: Final[tuple[DNSProvider, ...]] = (
         secondary="1.0.0.3",
         ipv6_primary="2606:4700:4700::1113",
         ipv6_secondary="2606:4700:4700::1003",
-        accent=COLORS["success"],
+        accent_key="success",
     ),
     DNSProvider(
         key="google",
@@ -156,7 +201,7 @@ DNS_PROVIDERS: Final[tuple[DNSProvider, ...]] = (
         secondary="8.8.4.4",
         ipv6_primary="2001:4860:4860::8888",
         ipv6_secondary="2001:4860:4860::8844",
-        accent=COLORS["info"],
+        accent_key="info",
     ),
     DNSProvider(
         key="opendns",
@@ -168,7 +213,7 @@ DNS_PROVIDERS: Final[tuple[DNSProvider, ...]] = (
         secondary="208.67.220.220",
         ipv6_primary="2620:119:35::35",
         ipv6_secondary="2620:119:53::53",
-        accent=COLORS["warning"],
+        accent_key="warning",
     ),
 )
 

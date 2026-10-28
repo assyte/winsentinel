@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import os
 import threading
-from pathlib import Path
 from typing import Callable
 
 import customtkinter as ctk
@@ -13,7 +12,13 @@ from core.constants import APP_NAME, APP_VERSION, COLORS
 from core.logger import get_logger, setup_logging
 from core.models import AuditReport, HardenResult
 from core.services import Services
-from core.winapi import apply_dark_titlebar, center_window, is_admin as process_is_admin
+from core.settings import load_theme, save_theme
+from core.winapi import (
+    apply_dark_titlebar,
+    asset_path,
+    center_window,
+    is_admin as process_is_admin,
+)
 from ui.components import LogConsole, Sidebar
 from ui.dashboard import DashboardPage
 from ui.firewall_page import FirewallPage
@@ -30,10 +35,12 @@ class WinSentinelApp(ctk.CTk):
 
     def __init__(self, services: Services | None = None):
         setup_logging()
-        apply_theme()
+        theme_mode = load_theme("dark")
+        apply_theme(theme_mode)
         super().__init__(fg_color=COLORS["bg"])
 
         self.services = services or Services()
+        self.theme_mode = theme_mode
         self.is_admin = process_is_admin()
         self.audit_report: AuditReport | None = None
         self.scanning = False
@@ -57,10 +64,36 @@ class WinSentinelApp(ctk.CTk):
         self.grid_rowconfigure(1, weight=0)
         self.protocol("WM_DELETE_WINDOW", self._on_close)
 
-        self.sidebar = Sidebar(self, self._show_page)
+        self._build_shell()
+        self.sidebar.set_status("Starting", "Preparing first audit…", COLORS["accent"])
+
+        self.after(250, lambda: apply_dark_titlebar(self, dark=self.theme_mode == "dark"))
+        self.after(650, lambda: self.start_audit(source="startup", silent=True))
+        self.after(1000, lambda: self._reset_page_scroll(self._current_page))
+
+        LOG.info(
+            "%s v%s started · admin=%s · theme=%s · session user=%s",
+            APP_NAME,
+            APP_VERSION,
+            self.is_admin,
+            self.theme_mode,
+            os.environ.get("USERNAME", "unknown"),
+        )
+        if not self.is_admin:
+            LOG.warning("Standard user context: remediation and network changes are disabled.")
+
+    # ------------------------------------------------------------------
+    def _build_shell(self) -> None:
+        self.configure(fg_color=COLORS["bg"])
+
+        self.sidebar = Sidebar(
+            self,
+            self._show_page,
+            on_toggle_theme=self._toggle_theme,
+            theme_mode=self.theme_mode,
+        )
         self.sidebar.grid(row=0, column=0, rowspan=2, sticky="nsw")
         self.sidebar.set_admin(self.is_admin)
-        self.sidebar.set_status("Starting", "Preparing first audit…", COLORS["accent"])
 
         self.page_container = ctk.CTkFrame(self, fg_color=COLORS["bg"], corner_radius=0)
         self.page_container.grid(row=0, column=1, sticky="nsew")
@@ -88,23 +121,52 @@ class WinSentinelApp(ctk.CTk):
         )
         self.log_console.lift()
 
-        self.after(250, lambda: apply_dark_titlebar(self))
-        self.after(650, lambda: self.start_audit(source="startup", silent=True))
-        self.after(1000, lambda: self._reset_page_scroll(self._current_page))
+        if self.audit_report is not None:
+            self.pages["dashboard"].update_report(self.audit_report)
+            self._update_sidebar_for_report(self.audit_report)
+        else:
+            self.sidebar.set_status(
+                "Ready",
+                "First audit runs automatically…",
+                COLORS["accent"],
+            )
 
-        LOG.info(
-            "%s v%s started · admin=%s · session user=%s",
-            APP_NAME,
-            APP_VERSION,
-            self.is_admin,
-            os.environ.get("USERNAME", "unknown"),
-        )
-        if not self.is_admin:
-            LOG.warning("Standard user context: remediation and network changes are disabled.")
+    def _rebuild_shell(self, current_page: str) -> None:
+        self._hide_toast()
+        for attribute in ("log_console", "page_container", "sidebar"):
+            widget = getattr(self, attribute, None)
+            if widget is not None:
+                try:
+                    widget.destroy()
+                except Exception:
+                    pass
+                setattr(self, attribute, None)
+        self.pages = {}
+        self._build_shell()
+        self._show_page(current_page)
+
+    def _toggle_theme(self) -> None:
+        if self._running_tasks or self.scanning or self.hardening:
+            self.sidebar.set_theme_mode(self.theme_mode)
+            self.show_toast(
+                "Wait for the current operation to finish before switching themes.",
+                "warning",
+            )
+            return
+
+        current_page = self._current_page
+        new_mode = "light" if self.theme_mode == "dark" else "dark"
+        self.theme_mode = new_mode
+        save_theme(new_mode)
+        apply_theme(new_mode)
+        self._rebuild_shell(current_page)
+        self.after(80, lambda: apply_dark_titlebar(self, dark=new_mode == "dark"))
+        LOG.info("Theme switched to %s", new_mode)
+        self.show_toast(f"{new_mode.title()} theme applied", "success", duration=2200)
 
     # ------------------------------------------------------------------
     def _set_icon(self) -> None:
-        icon = Path(__file__).resolve().parent.parent / "assets" / "winsentinel.ico"
+        icon = asset_path("winsentinel.ico")
         try:
             if icon.exists():
                 self.iconbitmap(str(icon))
@@ -310,7 +372,7 @@ class WinSentinelApp(ctk.CTk):
             self.show_toast(message, kind, duration=7000)
             if final is None:
                 self.show_toast(
-                    "Hardening applied, but the verification scan failed. Run Scan System.",
+                    "Hardening applied, but the verification scan failed. Run Full Scan.",
                     "warning",
                     duration=7000,
                 )

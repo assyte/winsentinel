@@ -13,6 +13,22 @@ All notable changes to WinSentinel are documented here. The project follows
 - Localization
 - Signed release builds
 
+## [1.1.0] - 2026-10-28
+
+### Added
+
+- Light/dark appearance switch with a remembered local preference
+- Neutral graphite and soft gray palettes with a muted steel accent
+- Muted gray shield mark and matching Windows application icon
+- Full firewall disable/enable controls for all Windows profiles, with confirmation
+- Clearer "Full Scan" and "Health Score" labels across the dashboard
+
+### Changed
+
+- Replaced the AMOLED-only visual language with readable light and dark themes
+- Made DNS provider colors and raw Tk widgets follow the active theme
+- Added Pillow as a runtime dependency for the logo asset
+
 ## [1.0.0] - 2026-10-26
 
 ### Added

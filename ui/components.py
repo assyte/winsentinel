@@ -16,10 +16,12 @@ from core.constants import (
     CHECK_ICONS,
     COLORS,
     FONT_MONO,
+    FONT_UI,
     STATUS_META,
 )
 from core.logger import LOG_QUEUE, get_log_path
 from core.models import Finding, Status
+from core.winapi import asset_path
 from ui.theme import (
     danger_button_kwargs,
     display_font,
@@ -29,6 +31,11 @@ from ui.theme import (
     secondary_button_kwargs,
     ui_font,
 )
+
+try:
+    from PIL import Image
+except ImportError:  # pragma: no cover - Pillow is a runtime dependency
+    Image = None
 
 
 def status_color(status: Status | str) -> str:
@@ -99,7 +106,15 @@ class Sidebar(ctk.CTkFrame):
         ("tools", "◇", "Security Tools"),
     )
 
-    def __init__(self, master, on_navigate: Callable[[str], None], **kwargs):
+    def __init__(
+        self,
+        master,
+        on_navigate: Callable[[str], None],
+        *,
+        on_toggle_theme: Callable[[], None],
+        theme_mode: str,
+        **kwargs,
+    ):
         super().__init__(
             master,
             width=196,
@@ -109,6 +124,8 @@ class Sidebar(ctk.CTkFrame):
         )
         self.grid_propagate(False)
         self._on_navigate = on_navigate
+        self._on_toggle_theme = on_toggle_theme
+        self._theme_mode = theme_mode
         self._buttons: dict[str, ctk.CTkButton] = {}
         self._bars: dict[str, ctk.CTkFrame] = {}
         self._active = "dashboard"
@@ -121,31 +138,32 @@ class Sidebar(ctk.CTkFrame):
         brand = ctk.CTkFrame(self, fg_color="transparent")
         brand.pack(fill="x", padx=16, pady=(18, 22))
 
-        canvas = tk.Canvas(
-            brand,
-            width=28,
-            height=34,
-            bg=COLORS["sidebar"],
-            highlightthickness=0,
-        )
-        canvas.pack(side="left", padx=(0, 9))
-        canvas.create_polygon(
-            (14, 1, 26, 6, 26, 18, 14, 32, 2, 18, 2, 6),
-            fill=COLORS["accent"],
-            outline="",
-        )
-        canvas.create_polygon(
-            (14, 7, 21, 10, 21, 17, 14, 25, 7, 17, 7, 10),
-            fill="#032a31",
-            outline="",
-        )
-        canvas.create_text(
-            14,
-            14,
-            text="✓",
-            fill=COLORS["accent"],
-            font=(FONT_MONO, 10, "bold"),
-        )
+        self._logo = None
+        logo_path = asset_path("winsentinel.png")
+        if Image is not None:
+            try:
+                image = Image.open(logo_path)
+                self._logo = ctk.CTkImage(light_image=image, dark_image=image, size=(30, 30))
+                ctk.CTkLabel(
+                    brand,
+                    image=self._logo,
+                    text="",
+                    width=30,
+                    height=30,
+                ).pack(side="left", padx=(0, 9))
+            except Exception:
+                self._logo = None
+        if self._logo is None:
+            ctk.CTkLabel(
+                brand,
+                text="WS",
+                width=30,
+                height=30,
+                corner_radius=8,
+                fg_color=COLORS["card_muted"],
+                text_color=COLORS["accent"],
+                font=ui_font(9, "bold"),
+            ).pack(side="left", padx=(0, 9))
 
         labels = ctk.CTkFrame(brand, fg_color="transparent")
         labels.pack(side="left", fill="y")
@@ -197,6 +215,24 @@ class Sidebar(ctk.CTkFrame):
     def _build_footer(self) -> None:
         footer = ctk.CTkFrame(self, fg_color="transparent")
         footer.pack(side="bottom", fill="x", padx=10, pady=12)
+
+        appearance = ctk.CTkFrame(footer, fg_color="transparent")
+        appearance.pack(fill="x", pady=(0, 8))
+        ctk.CTkLabel(
+            appearance,
+            text="APPEARANCE",
+            font=ui_font(7, "bold"),
+            text_color=COLORS["text_dim"],
+            anchor="w",
+        ).pack(anchor="w", pady=(0, 3))
+        self._theme_button = ctk.CTkButton(
+            appearance,
+            text="",
+            command=self._on_toggle_theme,
+            **secondary_button_kwargs(compact=True),
+        )
+        self._theme_button.pack(fill="x")
+        self.set_theme_mode(self._theme_mode)
 
         self._status_card = ctk.CTkFrame(
             footer,
@@ -277,6 +313,14 @@ class Sidebar(ctk.CTkFrame):
             self._bars[key].configure(
                 fg_color=COLORS["accent"] if selected else "transparent"
             )
+
+    def set_theme_mode(self, mode: str) -> None:
+        self._theme_mode = mode if mode in ("light", "dark") else "dark"
+        if hasattr(self, "_theme_button"):
+            if self._theme_mode == "dark":
+                self._theme_button.configure(text="Switch to light")
+            else:
+                self._theme_button.configure(text="Switch to dark")
 
     def set_status(self, text: str, detail: str = "", color: str | None = None) -> None:
         self._status_label.configure(text=text.upper())
@@ -378,7 +422,7 @@ class InfoBanner(ctk.CTkFrame):
             height=22,
             corner_radius=11,
             fg_color=accent,
-            text_color="#000000",
+            text_color=COLORS["bg"],
             font=ui_font(10, "bold"),
         ).pack(side="left", padx=(10, 8), pady=8)
         self.label = ctk.CTkLabel(
@@ -479,16 +523,16 @@ class ScoreGauge(tk.Canvas):
         self.create_text(
             self.size / 2,
             self.size / 2 + 14,
-            text="SECURITY SCORE",
+            text="HEALTH SCORE",
             fill=COLORS["text_dim"],
-            font=("Segoe UI", 6, "bold"),
+            font=(FONT_UI, 6, "bold"),
         )
         self.create_text(
             self.size / 2,
             self.size / 2 + 28,
             text="/ 100",
             fill=self._color(score),
-            font=("Segoe UI", 8, "bold"),
+            font=(FONT_UI, 8, "bold"),
         )
 
 
@@ -667,7 +711,7 @@ class LogConsole(ctk.CTkFrame):
             padx=9,
             pady=6,
             insertbackground=COLORS["accent"],
-            selectbackground="#164e63",
+            selectbackground=COLORS["select_bg"],
             spacing1=1,
             spacing3=1,
             state="disabled",
@@ -764,9 +808,12 @@ class ConfirmDialog(ctk.CTkToplevel):
         confirm_text: str = "Confirm",
         danger: bool = False,
         on_confirm: Callable[[], None] | None = None,
+        on_cancel: Callable[[], None] | None = None,
     ):
         super().__init__(parent)
         self._on_confirm = on_confirm
+        self._on_cancel = on_cancel
+        self._confirmed = False
         self.overrideredirect(True)
         self.configure(fg_color=COLORS["bg"])
         self.attributes("-topmost", True)
@@ -850,16 +897,20 @@ class ConfirmDialog(ctk.CTkToplevel):
 
     def _confirm(self) -> None:
         callback = self._on_confirm
+        self._confirmed = True
         self._close()
         if callback:
             callback()
 
     def _close(self) -> None:
+        callback = None if self._confirmed else self._on_cancel
         try:
             self.grab_release()
         except Exception:
             pass
         self.destroy()
+        if callback:
+            callback()
 
 
 def make_primary_button(master, text: str, command: Callable, **kwargs) -> ctk.CTkButton:
@@ -870,5 +921,11 @@ def make_primary_button(master, text: str, command: Callable, **kwargs) -> ctk.C
 
 def make_secondary_button(master, text: str, command: Callable, **kwargs) -> ctk.CTkButton:
     options = secondary_button_kwargs(compact=kwargs.pop("compact", False))
+    options.update(kwargs)
+    return ctk.CTkButton(master, text=text, command=command, **options)
+
+
+def make_danger_button(master, text: str, command: Callable, **kwargs) -> ctk.CTkButton:
+    options = danger_button_kwargs(compact=kwargs.pop("compact", False))
     options.update(kwargs)
     return ctk.CTkButton(master, text=text, command=command, **options)

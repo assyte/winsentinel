@@ -207,7 +207,7 @@ class NetworkPage(ctk.CTkFrame):
             fg_color=COLORS["accent"],
             hover_color=COLORS["accent_hover"],
             border_color=COLORS["border_bright"],
-            checkmark_color="#062f37",
+            checkmark_color=COLORS["accent_text"],
             width=138,
             checkbox_width=15,
             checkbox_height=15,

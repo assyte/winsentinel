@@ -15,6 +15,7 @@ from ui.components import (
     ConfirmDialog,
     PageHeader,
     StatusPill,
+    make_danger_button,
     make_primary_button,
     make_secondary_button,
 )
@@ -61,6 +62,14 @@ class FirewallPage(ctk.CTkFrame):
             compact=True,
         )
         self.enable_all_button.pack(side="left", padx=(6, 0))
+        self.disable_all_button = make_danger_button(
+            self.header.actions,
+            "Disable all",
+            self._disable_all,
+            width=94,
+            compact=True,
+        )
+        self.disable_all_button.pack(side="left", padx=(6, 0))
 
         self.scroll = ctk.CTkScrollableFrame(
             self,
@@ -151,7 +160,7 @@ class FirewallPage(ctk.CTkFrame):
                 text_color=COLORS["text_muted"],
                 progress_color=COLORS["accent"],
                 button_color=COLORS["text"],
-                button_hover_color="#ffffff",
+                button_hover_color=COLORS["text"],
                 fg_color=COLORS["border_bright"],
                 switch_width=30,
                 switch_height=15,
@@ -189,7 +198,7 @@ class FirewallPage(ctk.CTkFrame):
             width=34,
             progress_color=COLORS["accent"],
             button_color=COLORS["text"],
-            button_hover_color="#ffffff",
+            button_hover_color=COLORS["text"],
             fg_color=COLORS["border_bright"],
             switch_width=34,
             switch_height=18,
@@ -266,7 +275,7 @@ class FirewallPage(ctk.CTkFrame):
             width=34,
             progress_color=COLORS["accent"],
             button_color=COLORS["text"],
-            button_hover_color="#ffffff",
+            button_hover_color=COLORS["text"],
             fg_color=COLORS["border_bright"],
             switch_width=34,
             switch_height=18,
@@ -295,6 +304,7 @@ class FirewallPage(ctk.CTkFrame):
         )
         self.rt_switch.configure(state="normal" if defender_can_change else "disabled")
         self.enable_all_button.configure(state=state)
+        self.disable_all_button.configure(state=state)
 
     def refresh(self) -> None:
         if self._loading:
@@ -457,6 +467,32 @@ class FirewallPage(ctk.CTkFrame):
             on_done=self.refresh,
         )
 
+    def _disable_all(self) -> None:
+        self.disable_all_button.configure(state="disabled")
+        ConfirmDialog(
+            self,
+            title="Turn off Windows Firewall for all profiles?",
+            message=(
+                "This disables the Domain, Private, and Public firewall profiles. "
+                "Unsolicited inbound connections will no longer be filtered until you "
+                "turn them back on. Use this only for a short, intentional test."
+            ),
+            confirm_text="Disable all",
+            danger=True,
+            on_confirm=self._apply_disable_all,
+            on_cancel=lambda: self._set_controls_enabled(True),
+        )
+
+    def _apply_disable_all(self) -> None:
+        LOG.warning("Disabling all firewall profiles")
+        self.app.run_task(
+            "fw_disable_all",
+            lambda: self.app.services.firewall_manager.set_all_enabled(False),
+            self._on_operation_done,
+            self._on_operation_error,
+            on_done=self.refresh,
+        )
+
     def _toggle_inbound(self) -> None:
         desired = bool(self.inbound_switch.get())
         if not desired:
@@ -520,6 +556,8 @@ class FirewallPage(ctk.CTkFrame):
         self.app.show_toast(result.message, kind)
         for detail in result.details:
             LOG.info("Firewall: %s", detail)
+        if result.success:
+            self.app.refresh_security_pages()
 
     def _on_operation_error(self, error: Exception) -> None:
         LOG.error("Protection operation failed: %s", error)

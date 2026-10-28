@@ -38,13 +38,13 @@ class DashboardPage(ctk.CTkFrame):
 
         self.header = PageHeader(
             self,
-            "Security overview",
-            "A quick health check for this Windows PC.",
+            "System health",
+            "One scan for your PC's security health score and all protections.",
         )
         self.header.grid(row=0, column=0, sticky="ew", padx=18, pady=(14, 4))
         self.scan_button = make_secondary_button(
             self.header.actions,
-            "Scan System",
+            "Full Scan",
             self._scan,
             width=100,
             compact=True,
@@ -108,7 +108,7 @@ class DashboardPage(ctk.CTkFrame):
         section.grid_columnconfigure(0, weight=1)
         ctk.CTkLabel(
             section,
-            text="Security controls",
+            text="Health checks",
             font=ui_font(12, "bold"),
             text_color=COLORS["text"],
             anchor="w",
@@ -149,7 +149,7 @@ class DashboardPage(ctk.CTkFrame):
         narrative.grid(row=0, column=1, sticky="nw", padx=(10, 8), pady=(20, 0))
         self.risk_kicker = ctk.CTkLabel(
             narrative,
-            text="AUTOMATIC SECURITY AUDIT",
+            text="PC HEALTH CHECK",
             font=ui_font(8, "bold"),
             text_color=COLORS["accent"],
             anchor="w",
@@ -157,7 +157,7 @@ class DashboardPage(ctk.CTkFrame):
         self.risk_kicker.pack(anchor="w")
         self.risk_title = ctk.CTkLabel(
             narrative,
-            text="Preparing your security report",
+            text="Preparing your health report",
             font=ui_font(18, "bold"),
             text_color=COLORS["text"],
             anchor="w",
@@ -258,7 +258,7 @@ class DashboardPage(ctk.CTkFrame):
             self.progress.set(0)
             self.progress_label.configure(text="Starting…", text_color=COLORS["accent"])
         else:
-            self.scan_button.configure(text="Scan System", state="normal")
+            self.scan_button.configure(text="Full Scan", state="normal")
             if self.app.is_admin and (self._report is None or self._report.issues):
                 self.harden_button.configure(state="normal")
             else:

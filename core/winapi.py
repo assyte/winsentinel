@@ -46,8 +46,8 @@ def set_dpi_awareness() -> None:
             pass
 
 
-def apply_dark_titlebar(window: Any) -> None:
-    """Ask DWM to render the native title bar dark (Windows 10/11)."""
+def apply_dark_titlebar(window: Any, dark: bool = True) -> None:
+    """Ask DWM to render the native title bar in the requested mode."""
 
     if not is_windows():
         return
@@ -56,7 +56,7 @@ def apply_dark_titlebar(window: Any) -> None:
         hwnd = ctypes.windll.user32.GetParent(window.winfo_id())
         if not hwnd:
             hwnd = window.winfo_id()
-        enabled = ctypes.c_int(1)
+        enabled = ctypes.c_int(1 if dark else 0)
         for attribute in (20, 19):  # DWMWA_USE_IMMERSIVE_DARK_MODE variants
             result = ctypes.windll.dwmapi.DwmSetWindowAttribute(
                 hwnd,
@@ -68,6 +68,13 @@ def apply_dark_titlebar(window: Any) -> None:
                 break
     except Exception:
         pass
+
+
+def asset_path(filename: str) -> Path:
+    """Resolve a bundled asset in both source and PyInstaller builds."""
+
+    base = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent.parent))
+    return base / "assets" / filename
 
 
 def center_window(window: Any, width: int, height: int) -> None:

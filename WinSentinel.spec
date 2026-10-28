@@ -18,6 +18,8 @@ assets_dir = project_root / "assets"
 datas = [
     (str(assets_dir / "winsentinel.png"), "assets"),
     (str(assets_dir / "winsentinel.ico"), "assets"),
+    (str(assets_dir / "ATTRIBUTION.md"), "assets"),
+    (str(project_root / "LICENSE"), "."),
 ]
 datas += collect_data_files("customtkinter")
 

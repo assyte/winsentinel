@@ -15,7 +15,7 @@
 <p align="center">
   <img alt="Platform: Windows 10 / 11" src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078D4?style=flat-square">
   <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white">
-  <img alt="Tests: 64 passing" src="https://img.shields.io/badge/tests-64%20passing-22c55e?style=flat-square">
+  <img alt="Tests: 71 passing" src="https://img.shields.io/badge/tests-71%20passing-22c55e?style=flat-square">
   <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-22c55e?style=flat-square">
   <a href="https://github.com/assyte/winsentinel/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/assyte/winsentinel/actions/workflows/ci.yml/badge.svg"></a>
 </p>
@@ -52,9 +52,9 @@ telemetry, background service, driver, or startup entry.
 | | |
 | --- | --- |
 | **Runs on** | Windows 10 22H2 or newer, Windows 11, x64 |
-| **Built with** | Python 3.11+ and CustomTkinter 5.2.2 |
+| **Built with** | Python 3.11+, CustomTkinter 5.2.2, and Pillow |
 | **Audit scope** | Microsoft Defender, Windows Firewall, DNS privacy, Wi-Fi security, browser policy, UAC |
-| **Interface** | Five pages, compact 1000×700 AMOLED window, collapsible system log |
+| **Interface** | Five pages, compact 1000×700 light/dark window, collapsible system log |
 | **Privilege model** | Mandatory UAC elevation and a single-instance mutex |
 | **Data** | Local only; no telemetry or cloud account |
 | **Distribution** | Run from source or build a one-file PyInstaller executable |
@@ -66,9 +66,19 @@ telemetry, background service, driver, or startup entry.
 
 <p align="center">
   <a href="docs/screenshots/dashboard.png">
-    <img src="docs/screenshots/dashboard.png" alt="WinSentinel dashboard with security score and control cards" width="920">
+    <img src="docs/screenshots/dashboard.png" alt="WinSentinel light dashboard with health score and control cards" width="920">
   </a>
 </p>
+
+<p align="center">
+  <a href="docs/screenshots/dashboard-dark.png">
+    <img src="docs/screenshots/dashboard-dark.png" alt="WinSentinel dark theme dashboard" width="660">
+  </a>
+</p>
+
+Dark theme shown above; the page screenshots below use the light theme. The
+light/dark switch lives at the bottom of the sidebar and the choice is remembered
+locally.
 
 | DNS & Network | Firewall & Defender |
 | :---: | :---: |
@@ -92,14 +102,28 @@ telemetry, background service, driver, or startup entry.
   re-audits to verify the result.
 - **Switches DNS** — Cloudflare, Cloudflare Family, Google Public DNS, OpenDNS, or a
   DHCP reset, applied to one adapter or every active adapter.
-- **Controls firewall and Defender** — all three firewall profiles, inbound blocking,
-  and Defender real-time protection.
+- **Controls firewall and Defender** — all three firewall profiles, one-click
+  enable/disable for every profile, inbound blocking, and Defender real-time protection.
 - **Enforces browser privacy** — force-installs uBlock Origin and Privacy Badger for
   Chrome and Edge without replacing unrelated enterprise policies.
 - **Provides offline tools** — a CSPRNG passphrase generator and an honest router/Wi-Fi
   hardening helper.
+- **Fits your environment** — switch between a neutral light theme and a graphite dark
+  theme; the choice is remembered locally.
 - **Stays out of the way** — no Windows service, scheduled task, driver, or startup
   shortcut is installed.
+
+### Appearance
+
+The sidebar has one switch between the neutral light theme and the graphite dark
+theme. The preference is saved in
+`%LOCALAPPDATA%\WinSentinel\settings.json`; it is local-only and contains no
+machine or account data.
+
+The muted gray shield mark is based on Lucide's
+[`shield-check`](https://lucide.dev/icons/shield-check) icon. The ISC license and
+the exact asset provenance are documented in
+[`assets/ATTRIBUTION.md`](assets/ATTRIBUTION.md).
 
 ### The six controls
 
@@ -189,7 +213,7 @@ python -m unittest discover -s tests -v
 3. If elevation is declined, a native error appears and the app exits. It never silently
    continues in a reduced mode.
 4. A named mutex (`Local\WinSentinel.Security.1`) prevents two instances from running.
-5. DPI awareness and the native dark title bar are applied.
+5. DPI awareness and a theme-aware native title bar are applied.
 6. The dashboard starts a read-only audit automatically. No settings change until you
    press a remediation button.
 
@@ -219,9 +243,9 @@ re-audits after the pipeline and displays the verified state.
 
 | Page | What you can do |
 | --- | --- |
-| **Dashboard** | See the score, risk headline, six control cards, evidence, recommendations, `Scan System`, and `Harden My PC` |
+| **Dashboard** | See the health score, risk headline, six control cards, evidence, recommendations, `Full Scan`, and `Harden My PC` |
 | **DNS & Network** | Inspect active adapters and current resolvers; apply a preset to one adapter or all adapters; reset to DHCP; flush the resolver cache |
-| **Firewall & Defender** | Toggle each firewall profile, block inbound traffic by default, inspect Defender health, and toggle real-time protection |
+| **Firewall & Defender** | Toggle each firewall profile, enable or disable all profiles at once, block inbound traffic by default, inspect Defender health, and toggle real-time protection |
 | **Browser & Privacy** | Detect Chrome and Edge, review every forced-extension entry from HKLM and HKCU, enforce blockers, or remove only WinSentinel-managed entries |
 | **Security Tools** | Generate a 4–12 word passphrase with optional number and symbol; inspect Wi-Fi security and open the router admin page |
 
@@ -296,7 +320,7 @@ are written to the local log. Passphrases are never logged.
 
 | Change | How to reverse it |
 | --- | --- |
-| Firewall profile or inbound default | Toggle it back on the Firewall page, or use Windows Security |
+| Firewall profiles (individually or all) or inbound default | Toggle it back on the Firewall page, or use Windows Security |
 | Defender real-time protection | Toggle it back, or use Windows Security |
 | DNS preset | Select another preset or `Use automatic (DHCP)` |
 | Browser extension policy | `Remove policies` on the Browser & Privacy page removes only WinSentinel-managed entries |
@@ -422,8 +446,9 @@ Current coverage includes:
 - browser forced-extension parsing and compliance
 - passphrase entropy and Wi-Fi helper content
 - shell quoting, JSON tolerance, and address validation
+- theme preference persistence and light/dark palette integrity
 
-The repository has **64 tests** and a GitHub Actions workflow that runs them on Windows
+The repository has **71 tests** and a GitHub Actions workflow that runs them on Windows
 with Python 3.11 and 3.12.
 
 ### Build a standalone executable
@@ -453,11 +478,12 @@ binary with your own code-signing certificate before distributing it.
 ```text
 winsentinel/
 ├── main.py                     # entrypoint, UAC elevation, single instance
-├── requirements.txt            # runtime dependency
-├── requirements-dev.txt        # PyInstaller and Pillow
+├── requirements.txt            # runtime dependencies
+├── requirements-dev.txt        # PyInstaller packaging tools
 ├── WinSentinel.spec            # one-file PyInstaller build
 ├── build.ps1                   # reproducible build script
 ├── assets/
+│   ├── ATTRIBUTION.md          # Lucide shield-check attribution
 │   ├── winsentinel.ico
 │   ├── winsentinel.png
 │   └── version_info.txt
@@ -472,6 +498,7 @@ winsentinel/
 │   ├── policy_manager.py       # browser force-install and UAC registry policy
 │   ├── security_tools.py       # passphrase generator and Wi-Fi helper
 │   ├── services.py             # dependency container
+│   ├── settings.py             # local theme preference
 │   ├── shell.py                # hardened subprocess/PowerShell/netsh wrappers
 │   ├── winapi.py               # elevation, DPI, title bar, native dialogs
 │   └── wordlist.py             # 333-word passphrase list
@@ -520,7 +547,7 @@ winsentinel/
 2. Reset DNS to automatic on **DNS & Network**.
 3. Restore any firewall/Defender settings you want to keep.
 4. Close WinSentinel and delete the project folder.
-5. Optionally delete `%LOCALAPPDATA%\WinSentinel` (logs only).
+5. Optionally delete `%LOCALAPPDATA%\WinSentinel` (logs and the remembered theme).
 
 WinSentinel installs no service, driver, scheduled task, or startup entry.
 
